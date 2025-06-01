@@ -3,6 +3,8 @@ using UnityEngine;
 public class LifeSystem : MonoBehaviour
 {
     [SerializeField] private float maxHealth;
+    
+    public float MaxHealth { get => maxHealth; set => maxHealth = value; }
 
     public void GetDamaged(float damage)
     {
@@ -14,8 +16,6 @@ public class LifeSystem : MonoBehaviour
     }
     private void Die()
     {
-        // Handle death logic here, e.g., play animation, destroy object, etc.
-        Debug.Log("Character has died.");
         Destroy(gameObject);
     }   
 }

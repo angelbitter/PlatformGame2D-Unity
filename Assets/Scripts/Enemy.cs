@@ -86,8 +86,11 @@ public class Enemy : MonoBehaviour
         }
         else if (collision.gameObject.CompareTag("PlayerHitbox"))
         {
-            LifeSystem lifeSystem = collision.gameObject.GetComponent<LifeSystem>();
-            lifeSystem.GetDamaged(damage);
+            Player player = collision.gameObject.GetComponentInParent<Player>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
+            }
         }
     }
 }

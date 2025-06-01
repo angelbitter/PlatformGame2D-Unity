@@ -16,8 +16,13 @@ public class Slime : Enemy
 
     protected override void OnTriggerEnter2D(Collider2D collision)
     {
-        base.OnTriggerEnter2D(collision);
-        // Debug.Log("Slime collided with: " + collision.gameObject.name);
+        if (collision.gameObject.CompareTag("PlayerHitbox"))
+        {
+            Player player = collision.gameObject.GetComponentInParent<Player>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
+            }
+        }
     }
-
 }

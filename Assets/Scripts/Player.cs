@@ -1,3 +1,4 @@
+using System.Collections;
 using Unity.VisualScripting;
 using UnityEditor.Rendering;
 using UnityEngine;
@@ -6,7 +7,6 @@ public class Player : MonoBehaviour
 {
     private Rigidbody2D rb;
     private float inputH;
-    
     [Header("Movement Settings")]
     [SerializeField] private float movementSpeed;
     [SerializeField] private float jumpForce;
@@ -19,20 +19,30 @@ public class Player : MonoBehaviour
     [SerializeField] private float attackRadius;
     [SerializeField] private LayerMask whatIsDamageable;
     [SerializeField] private float attackCooldown;
-    [SerializeField] private float attackDamage; 
+    [SerializeField] private float attackDamage;
     private bool attacking = false;
+    private bool dead = false;
+    private bool isVulnerable = true; 
+    private float vulnerableTime = 1f;
 
     private Animator animator;
+    private SpriteRenderer playerSprite; 
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        playerSprite = GetComponent<SpriteRenderer>();
         animator = GetComponent<Animator>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (dead)
+        {
+            return;
+        }
         Movement();
         StartAttack();
         Jump();
@@ -41,7 +51,7 @@ public class Player : MonoBehaviour
     {
         if (attacking)
         {
-            return; // Prevent movement while attacking
+            return;
         }
         inputH = Input.GetAxisRaw("Horizontal");
         rb.linearVelocity = new Vector2(inputH * movementSpeed, rb.linearVelocity.y);
@@ -69,7 +79,7 @@ public class Player : MonoBehaviour
         {
             if (CheckOnGround())
             {
-                rb.linearVelocity = Vector2.zero; 
+                rb.linearVelocity = Vector2.zero;
             }
             attacking = true;
             animator.SetTrigger("attack");
@@ -114,10 +124,46 @@ public class Player : MonoBehaviour
         }
         return hit;
     }
-    
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
+    }
+    
+    public void TakeDamage(float damage)
+    {
+        if (!isVulnerable || dead)
+        {
+            return;
+        }
+        LifeSystem lifeSystem = GetComponent<LifeSystem>();
+        if (lifeSystem != null)
+        {
+            if (lifeSystem.MaxHealth - damage <= 0)
+            {
+                dead = true;
+                rb.linearVelocity = Vector2.zero;
+            }
+            lifeSystem.GetDamaged(damage);
+            StartCoroutine(invulnerable());
+        }
+    }
+    IEnumerator InvulnerableVisual()
+    {
+        while (!isVulnerable)
+        {
+            playerSprite.enabled = false;
+            yield return new WaitForSeconds(0.1f);
+            playerSprite.enabled = true;
+            yield return new WaitForSeconds(0.1f);
+        }
+    }
+    IEnumerator invulnerable()
+    {
+        isVulnerable = false;
+        StartCoroutine(InvulnerableVisual());
+        yield return new WaitForSeconds(vulnerableTime);
+        isVulnerable = true;
     }
 }
