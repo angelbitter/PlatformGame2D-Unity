@@ -36,9 +36,12 @@ public class FireBall : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("PlayerHitbox"))
         {
-            LifeSystem lifeSystem = collision.gameObject.GetComponent<LifeSystem>();
+            Player player = collision.gameObject.GetComponent<Player>();
+            if (player != null)
+            {
+                player.TakeDamage(damage);
+            }
             Explode();
-            lifeSystem.GetDamaged(damage);
         }
     }
     private IEnumerator DestroyAfterTime()
